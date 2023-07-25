@@ -12,61 +12,33 @@ class ItemLista {
   ItemLista(this.nome, this.comentario, this.cep);
 }
 
-class ListaApp extends StatefulWidget {
+class ListaApp extends StatelessWidget {
   @override
-  _ListaAppState createState() => _ListaAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: ListaScreen(),
+    );
+  }
 }
 
-class _ListaAppState extends State<ListaApp> {
+class ListaScreen extends StatefulWidget {
+  @override
+  _ListaScreenState createState() => _ListaScreenState();
+}
+
+class _ListaScreenState extends State<ListaScreen> {
   List<ItemLista> itens = [];
   TextEditingController nomeController = TextEditingController();
   TextEditingController comentarioController = TextEditingController();
   TextEditingController cepController = TextEditingController();
 
   void adicionarItem() {
-    setState(() {
-      itens.add(
-        ItemLista(
-          nomeController.text,
-          comentarioController.text,
-          cepController.text,
-        ),
-      );
-      nomeController.clear();
-      comentarioController.clear();
-      cepController.clear();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Lista de Itens"),
-        ),
-        body: ListView.builder(
-          itemCount: itens.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(itens[index].nome),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Comentário: " + itens[index].comentario),
-                  Text("CEP: " + itens[index].cep),
-                ],
-              ),
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: adicionarItem,
-          child: Icon(Icons.add),
-        ),
-        bottomSheet: Container(
-          padding: EdgeInsets.all(20),
-          child: Column(
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Adicionar novo item"),
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
@@ -81,14 +53,85 @@ class _ListaAppState extends State<ListaApp> {
                 controller: cepController,
                 decoration: InputDecoration(labelText: "CEP"),
               ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: adicionarItem,
-                child: Text("Adicionar Item"),
-              ),
             ],
           ),
-        ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  itens.add(
+                    ItemLista(
+                      nomeController.text,
+                      comentarioController.text,
+                      cepController.text,
+                    ),
+                  );
+                });
+                nomeController.clear();
+                comentarioController.clear();
+                cepController.clear();
+                Navigator.of(context).pop();
+              },
+              child: Text("Adicionar"),
+            ),
+            TextButton(
+              onPressed: () {
+                nomeController.clear();
+                comentarioController.clear();
+                cepController.clear();
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancelar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Lista de Itens"),
+      ),
+      body: ListView.builder(
+        itemCount: itens.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(itens[index].nome),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Comentário: " + itens[index].comentario),
+                Text("CEP: " + itens[index].cep),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit),
+                  onPressed: () {
+                    // Implemente aqui a lógica para editar o item (se necessário)
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      itens.removeAt(index);
+                    });
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: adicionarItem,
+        child: Icon(Icons.add),
       ),
     );
   }
